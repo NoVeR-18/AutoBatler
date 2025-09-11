@@ -1,0 +1,15 @@
+# Declare unity data files that will always have LF line endings on checkout.
+*.meta text eol=lf
+*.asset text eol=lf
+*.prefab text eol=lf
+*.unity text eol=lf
+*.anim text eol=lf
+*.controller text eol=lf
+*.overrideController text eol=lf
+*.lighting text eol=lf
+*.renderTexture text eol=lf
+*.physicsMaterial2D text eol=lf
+*.physicsMaterial text eol=lf
+*.mat text eol=lf
+*.spriteatlas text eol=lf
+*.preset text eol=lf

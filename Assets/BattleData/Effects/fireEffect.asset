@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 85243c907a97c6d4f9037a42f76a7c89, type: 3}
+  m_Name: fireEffect
+  m_EditorClassIdentifier: 
+  effectName: 
+  Icon: {fileID: -556974013050493502, guid: d1b9c4ed814fa744a84a0fc5dc2fb47e, type: 3}
+  Type: 0
+  Duration: 3
+  damagePerTick: 1
+  weaknessToDamageType: 2
+  weaknessMultiplier: 0.5
+  preventAction: 0
+  preventMagic: 0
+  preventPhysical: 0
+  silence: 0
+  sleep: 0
+  isFeared: 0
+  forceAllyTargeting: 0
+  randomTargeting: 0
+  blockNextAbility: 0
+  doubleMagic: 0
+  doublePhysical: 0
+  regenHP: 0
+  regenAmount: 0
+  castSpeedMultiplier: 1
+  magicDamageModifier: 1
+  physicalDamageModifier: 1
+  resistanceModifier: 1
+  comboEffects:
+  - otherEffect: {fileID: 0}
+    resultingEffect: {fileID: 0}
+    removeOriginals: 0
