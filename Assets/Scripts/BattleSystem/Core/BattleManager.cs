@@ -16,13 +16,33 @@ namespace BattleSystem
 
         [Header("Timing")]
         public float actionInterval = 1f;
+        private float speedMultiplier = 1f;
+        private bool isPaused = false;
+        private bool isBattleActive = false;
 
         [Header("SuperHero")]
         public SuperHero superHero;
 
 
         [Header("UI")]
-        public SuperHeroUI superHeroUI;
+
+        public GameUI gameUI;
+        private int _heroTeamRoundDamage;
+
+        public int HeroTeamRoundDamage
+        {
+            get => _heroTeamRoundDamage;
+            set
+            {
+                if (_heroTeamRoundDamage != value)
+                {
+                    _heroTeamRoundDamage = value;
+                    gameUI?.SetDamage(_heroTeamRoundDamage);
+                }
+            }
+        }
+
+
 
         private Dictionary<BattleTeam, List<BattleSpawnPoint>> _spawnPoints;
         private Dictionary<BattleSpawnPoint, BattleCharacter> occupiedSpawns = new();
@@ -32,6 +52,11 @@ namespace BattleSystem
         private void Start()
         {
             _spawnPoints = spawnPoints.GetSpawnPoints();
+
+            gameUI.AddListenerSpeed(ToggleSpeed);
+            gameUI.AddListenerSurender(Surrender);
+            gameUI.AddListenerPause(TogglePause);
+
             StartBattle();
 
         }
@@ -43,14 +68,41 @@ namespace BattleSystem
 
         public void StartBattle()
         {
-            if (superHeroUI != null)
-                superHero.gameObject.SetActive(true);
+            isBattleActive = true;
+            if (gameUI != null)
+                gameUI.gameObject.SetActive(true);
             occupiedSpawns.Clear();
             SpawnTeams();
             BuildTurnOrder();
             StopAllCoroutines();
             StartCoroutine(TurnLoop());
         }
+
+        private void ToggleSpeed()
+        {
+            speedMultiplier = (Mathf.Approximately(speedMultiplier, 1f)) ? 2f : 1f;
+            Debug.Log($"Speed set to x{speedMultiplier}");
+        }
+
+        private void TogglePause()
+        {
+            isPaused = !isPaused;
+            Debug.Log(isPaused ? "Battle Paused" : "Battle Resumed");
+        }
+
+        private void Surrender()
+        {
+            Debug.Log("You surrendered!");
+            foreach (var c in teamA)
+                c.CurrentStats.CurrentHP = 0;
+            foreach (var c in teamB)
+                c.CurrentStats.CurrentHP = 0;
+
+            isBattleActive = false;
+            StopAllCoroutines();
+            Debug.Log("Battle Over (Surrender)");
+        }
+
         private void SpawnTeams()
         {
             occupiedSpawns.Clear();
@@ -83,11 +135,15 @@ namespace BattleSystem
                 superHero = heroInstance;
                 superHero.GetEnemiesFunc = team => team == BattleTeam.Team1 ? teamB : teamA;
                 superHero.GetAlliesFunc = team => team == BattleTeam.Team1 ? teamA : teamB;
-                if (superHeroUI != null)
-                    superHeroUI.Setup(superHero);
+                superHero.OnDamageDealt += AddHeroDamage;
+                if (gameUI.superHeroUI != null)
+                    gameUI.superHeroUI.Setup(superHero);
             }
         }
-
+        private void AddHeroDamage(int dmg)
+        {
+            HeroTeamRoundDamage += dmg;
+        }
 
         private void BuildTurnOrder()
         {
@@ -174,6 +230,11 @@ namespace BattleSystem
             {
                 target.TakeDamage(totalDamage);
 
+                if (caster.Team == superHero.Team)
+                {
+                    HeroTeamRoundDamage += totalDamage;
+                }
+
                 GrantMana(target, totalDamage / 2);
                 GrantMana(caster, totalDamage / 2);
             }
@@ -225,7 +286,7 @@ namespace BattleSystem
 
         private IEnumerator TurnLoop()
         {
-            while (!IsBattleOver())
+            while (isBattleActive && !IsBattleOver())
             {
                 if (turnOrder.Count == 0)
                 {
@@ -234,19 +295,23 @@ namespace BattleSystem
                     continue;
                 }
 
+                HeroTeamRoundDamage = 0;
                 for (int i = 0; i < turnOrder.Count; i++)
                 {
+                    // пауза
+                    while (isPaused) yield return null;
+
                     var current = turnOrder[i];
 
                     if (current == null || !current.IsAlive || !current.CanAct())
                     {
-                        yield return new WaitForSeconds(actionInterval);
+                        yield return new WaitForSeconds(actionInterval / speedMultiplier);
                         continue;
                     }
 
                     yield return StartCoroutine(ExecuteActionCoroutine(current));
                     CleanDeadCharactersAndFreeSpawns();
-                    yield return new WaitForSeconds(actionInterval);
+                    yield return new WaitForSeconds(actionInterval / speedMultiplier);
                 }
 
                 // end of round
@@ -254,7 +319,9 @@ namespace BattleSystem
             }
 
             Debug.Log("Battle Over!");
+            gameUI.gameObject.SetActive(false);
         }
+
 
 
 
@@ -303,38 +370,25 @@ namespace BattleSystem
             }
             else
             {
-                // don`t have any ability to use Ч try to use basic ability (ManaCost == 0 and off cooldown)
-                AbilityData spell = character.Abilities.FirstOrDefault(a =>
-                    a.ManaCost == 0 && character.GetCooldowns().TryGetValue(a, out float rem) && rem <= 0f);
-
-                if (spell != null)
+                // default attack
+                var targetList = SelectTargets(character, AbilityTargetType.SingleEnemy);
+                if (targetList.Count > 0)
                 {
-                    var targets = SelectTargets(character, spell.TargetType);
+                    var target = targetList[0];
 
-                    foreach (var t in targets)
-                        ApplyAbility(character, t, spell);
+                    int simpleDamage = character.CurrentStats.baseDamage;
 
-                    character.PlayAttackAnimation(spell.animationTrigger);
-                    character.StartCooldown(spell);
-
-                }
-                else
-                {
-                    // default attack
-                    var targetList = SelectTargets(character, AbilityTargetType.SingleEnemy);
-                    if (targetList.Count > 0)
+                    if (simpleDamage > 0)
                     {
-                        var target = targetList[0];
+                        target.TakeDamage(simpleDamage);
 
-                        int simpleDamage = character.CurrentStats.baseDamage;
-
-                        if (simpleDamage > 0)
+                        if (character.Team == superHero.Team)
                         {
-                            target.TakeDamage(simpleDamage);
-                            GrantMana(character, simpleDamage / 2);
-                            character.PlayAttackAnimation();
-                            Debug.Log($"{character.characterName} auto-attacks {target.characterName} for {simpleDamage}");
+                            HeroTeamRoundDamage += simpleDamage;
                         }
+                        GrantMana(character, simpleDamage / 2);
+                        character.PlayAttackAnimation();
+                        Debug.Log($"{character.characterName} auto-attacks {target.characterName} for {simpleDamage}");
                     }
                 }
             }
@@ -359,7 +413,7 @@ namespace BattleSystem
                 if (superHero.Team == charWhoActed.Team)
                 {
                     superHero.GainMana(amount);
-                    superHeroUI.UpdateManaUI();
+                    gameUI.superHeroUI.UpdateManaUI();
                 }
             }
         }
@@ -373,7 +427,7 @@ namespace BattleSystem
             if (superHero != null)
             {
                 superHero.TickCooldowns(deltaTime);
-                superHeroUI.UpdateCooldowns(superHero);
+                gameUI.superHeroUI.UpdateCooldowns(superHero);
             }
 
         }

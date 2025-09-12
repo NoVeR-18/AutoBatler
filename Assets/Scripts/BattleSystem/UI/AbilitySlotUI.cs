@@ -1,4 +1,5 @@
 ﻿using System;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -9,6 +10,7 @@ namespace BattleSystem
         [SerializeField] private Image icon;
         [SerializeField] private Image cooldownOverlay;
         [SerializeField] private Button button;
+        [SerializeField] private TextMeshProUGUI manacostText;
 
         private AbilityData ability;
         private int slotIndex;
@@ -30,6 +32,10 @@ namespace BattleSystem
             {
                 button.onClick.RemoveAllListeners();
                 button.onClick.AddListener(() => OnClicked?.Invoke(slotIndex));
+            }
+            if (manacostText != null)
+            {
+                manacostText.text = ability.ManaCost.ToString();
             }
         }
 

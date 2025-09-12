@@ -14,10 +14,13 @@ namespace BattleSystem
         public List<AbilityData> superSkills;
         public Dictionary<AbilityData, float> skillCooldowns = new();
 
+
+
         [SerializeField] private Animator animator;
 
         public System.Func<BattleTeam, List<BattleCharacter>> GetEnemiesFunc;
         public System.Func<BattleTeam, List<BattleCharacter>> GetAlliesFunc;
+        public System.Action<int> OnDamageDealt;
 
         private void Start()
         {
@@ -59,7 +62,12 @@ namespace BattleSystem
             if (targets.Count > 0)
             {
                 foreach (var target in targets)
-                    target.TakeDamage(skill.GetDamage());
+                {
+                    var damage = skill.GetDamage();
+                    target.TakeDamage(damage);
+
+                    OnDamageDealt?.Invoke(damage);
+                }
 
                 currentMana -= skill.ManaCost;
                 StartCooldown(skill);
