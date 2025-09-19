@@ -11,6 +11,9 @@ public class GameUI : MonoBehaviour
     [SerializeField] private Button pauseButton;
     [SerializeField] private Button surrenderButton;
     [SerializeField] private TextMeshProUGUI totalDamagePerRound;
+    [SerializeField] private Transform pauseImage;
+    [SerializeField] private TextMeshProUGUI RoundText;
+
     public SuperHeroUI superHeroUI;
 
     public void AddListenerSpeed(UnityAction action)
@@ -22,7 +25,13 @@ public class GameUI : MonoBehaviour
     public void AddListenerPause(UnityAction action)
     {
         if (pauseButton != null)
+        {
             pauseButton.onClick.AddListener(action);
+            pauseButton.onClick.AddListener(() =>
+            {
+                pauseImage.gameObject.SetActive(!pauseImage.gameObject.activeSelf);
+            });
+        }
     }
 
     public void AddListenerSurender(UnityAction action)
@@ -34,5 +43,18 @@ public class GameUI : MonoBehaviour
     public void SetDamage(int value)
     {
         totalDamagePerRound.text = "Total damage \n " + value;
+    }
+
+    public void ReserUI()
+    {
+        totalDamagePerRound.text = "";
+        superHeroUI.ResetUI();
+        gameObject.SetActive(false);
+    }
+
+    internal void SetRound(int round)
+    {
+        if (RoundText != null)
+            RoundText.text = "Round " + round;
     }
 }

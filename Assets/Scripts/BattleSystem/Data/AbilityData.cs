@@ -10,7 +10,6 @@ namespace BattleSystem
         public string abilityName;
         public Sprite icon;
         public int ManaCost;
-        public float cooldown;
         public int baseDamage;
         public AbilityTargetType TargetType;
         public List<StatusEffect> effects; // status + duration etc.

@@ -53,7 +53,6 @@ SpriteRenderer:
   m_RayTraceProcedural: 0
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
-  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -129,12 +128,12 @@ MonoBehaviour:
     MaxHP: 300
     CurrentHP: 300
     MaxMana: 140
-    CurrentMana: 100
+    CurrentMana: 0
     baseDamage: 3
   damagePopupPrefab: {fileID: 0}
   HPMPBarInstance: {fileID: 0}
   Abilities:
   - {fileID: 11400000, guid: b41d238b138b6ac40aa0713abe642c8c, type: 2}
-  nameIDInWorld: 
-  animator: {fileID: 0}
+  animator: {fileID: 3422078835189284354}
   healthBarPrefab: {fileID: 0}
+  spriteRenderer: {fileID: 2240273977473830477}

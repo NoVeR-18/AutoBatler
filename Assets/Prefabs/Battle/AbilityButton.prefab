@@ -62,9 +62,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   icon: {fileID: 1483173828126814576}
-  cooldownOverlay: {fileID: 3493388495311556848}
   button: {fileID: 810636007439139371}
-  manacostText: {fileID: 0}
+  manacostText: {fileID: 4824162852359222219}
 --- !u!114 &1483173828126814576
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -292,7 +291,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1949263337721756093
 RectTransform:
   m_ObjectHideFlags: 0

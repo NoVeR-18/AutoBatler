@@ -13,13 +13,10 @@ MonoBehaviour:
   m_Name: Shield
   m_EditorClassIdentifier: 
   abilityName: Shield
-  icon: {fileID: -6350371357635554078, guid: 7c725f8feeaac21448385bc6dd6ec71a, type: 3}
-  castTime: 0
+  icon: {fileID: -1672067883919162423, guid: b72ed1a0c9fd81c48a8dd032269b4f24, type: 3}
+  ManaCost: 30
   cooldown: 5
-  shieldAmount: 10
-  damages: []
+  baseDamage: -5
   TargetType: 3
-  abilityType: 0
   effects: []
-  summonPrefab: {fileID: 0}
   animationTrigger: Attack

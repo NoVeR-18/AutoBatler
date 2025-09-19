@@ -1,4 +1,5 @@
 using DG.Tweening;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,8 +12,9 @@ namespace BattleSystem
         [Header("References")]
         [SerializeField] private BattleSpawnData spawnPoints;
 
-        public List<BattleCharacter> teamA = new();
-        public List<BattleCharacter> teamB = new();
+        private List<BattleCharacter> teamA = new();
+        private List<BattleCharacter> teamB = new();
+        private SuperHero superHero;
 
         [Header("Timing")]
         public float actionInterval = 1f;
@@ -20,14 +22,12 @@ namespace BattleSystem
         private bool isPaused = false;
         private bool isBattleActive = false;
 
-        [Header("SuperHero")]
-        public SuperHero superHero;
-
-
         [Header("UI")]
 
         public GameUI gameUI;
         private int _heroTeamRoundDamage;
+
+        public Action OnDefeat;
 
         public int HeroTeamRoundDamage
         {
@@ -41,9 +41,19 @@ namespace BattleSystem
                 }
             }
         }
-
-
-
+        private int _round;
+        public int RoundNumber
+        {
+            get => _round;
+            set
+            {
+                if (_round != value)
+                {
+                    _round = value;
+                    gameUI?.SetRound(_round);
+                }
+            }
+        }
         private Dictionary<BattleTeam, List<BattleSpawnPoint>> _spawnPoints;
         private Dictionary<BattleSpawnPoint, BattleCharacter> occupiedSpawns = new();
 
@@ -56,14 +66,18 @@ namespace BattleSystem
             gameUI.AddListenerSpeed(ToggleSpeed);
             gameUI.AddListenerSurender(Surrender);
             gameUI.AddListenerPause(TogglePause);
-
-            StartBattle();
-
         }
-        public void SetTeams(List<BattleCharacter> teamAList, List<BattleCharacter> teamBList)
+
+
+
+        public void SetTeams(List<BattleCharacter> teamAList, List<BattleCharacter> teamBList, SuperHero superHero)
         {
             teamA = teamAList;
             teamB = teamBList;
+            if (superHero != null)
+                this.superHero = superHero;
+
+            StartBattle();
         }
 
         public void StartBattle()
@@ -71,6 +85,7 @@ namespace BattleSystem
             isBattleActive = true;
             if (gameUI != null)
                 gameUI.gameObject.SetActive(true);
+            RoundNumber = 1;
             occupiedSpawns.Clear();
             SpawnTeams();
             BuildTurnOrder();
@@ -81,25 +96,23 @@ namespace BattleSystem
         private void ToggleSpeed()
         {
             speedMultiplier = (Mathf.Approximately(speedMultiplier, 1f)) ? 2f : 1f;
-            Debug.Log($"Speed set to x{speedMultiplier}");
         }
 
         private void TogglePause()
         {
             isPaused = !isPaused;
-            Debug.Log(isPaused ? "Battle Paused" : "Battle Resumed");
         }
 
         private void Surrender()
         {
-            Debug.Log("You surrendered!");
             foreach (var c in teamA)
                 c.CurrentStats.CurrentHP = 0;
             foreach (var c in teamB)
                 c.CurrentStats.CurrentHP = 0;
 
             isBattleActive = false;
-            StopAllCoroutines();
+            Defeat();
+
             Debug.Log("Battle Over (Surrender)");
         }
 
@@ -113,6 +126,7 @@ namespace BattleSystem
                 var spawn = _spawnPoints[BattleTeam.Team1][i];
                 var character = Instantiate(teamA[i], spawn.transform.position, Quaternion.identity);
                 character.Team = BattleTeam.Team1;
+                character.CurrentStats.CurrentMana = 0; // start with 0 mana
                 occupiedSpawns[spawn] = character;
                 teamA[i] = character;
             }
@@ -123,6 +137,7 @@ namespace BattleSystem
                 var spawn = _spawnPoints[BattleTeam.Team2][i];
                 var character = Instantiate(teamB[i], spawn.transform.position, Quaternion.identity);
                 character.Team = BattleTeam.Team2;
+                character.CurrentStats.CurrentMana = 0; // start with 0 mana
                 occupiedSpawns[spawn] = character;
                 teamB[i] = character;
             }
@@ -135,6 +150,7 @@ namespace BattleSystem
                 superHero = heroInstance;
                 superHero.GetEnemiesFunc = team => team == BattleTeam.Team1 ? teamB : teamA;
                 superHero.GetAlliesFunc = team => team == BattleTeam.Team1 ? teamA : teamB;
+                superHero.currentMana = 0;
                 superHero.OnDamageDealt += AddHeroDamage;
                 if (gameUI.superHeroUI != null)
                     gameUI.superHeroUI.Setup(superHero);
@@ -215,7 +231,7 @@ namespace BattleSystem
         private List<BattleCharacter> GetRandomAliveTarget(List<BattleCharacter> list)
         {
             if (list == null || list.Count == 0) return new();
-            return new List<BattleCharacter> { list[Random.Range(0, list.Count)] };
+            return new List<BattleCharacter> { list[UnityEngine.Random.Range(0, list.Count)] };
         }
 
         private void ApplyAbility(BattleCharacter caster, BattleCharacter target, AbilityData ability)
@@ -313,16 +329,24 @@ namespace BattleSystem
                     CleanDeadCharactersAndFreeSpawns();
                     yield return new WaitForSeconds(actionInterval / speedMultiplier);
                 }
-
+                RoundNumber++;
                 // end of round
-                UpdateAllCooldowns(actionInterval);
             }
-
-            Debug.Log("Battle Over!");
-            gameUI.gameObject.SetActive(false);
+            Defeat();
         }
 
-
+        private void Defeat()
+        {
+            isBattleActive = false;
+            gameUI.ReserUI();
+            OnDefeat?.Invoke();
+            StopAllCoroutines();
+            foreach (var c in GetAllCharacters())
+            {
+                Destroy(c.gameObject);
+            }
+            Destroy(superHero.gameObject);
+        }
 
 
         private IEnumerator ExecuteActionCoroutine(BattleCharacter character)
@@ -356,7 +380,6 @@ namespace BattleSystem
                 }
 
                 character.PlayAttackAnimation(chosen.animationTrigger);
-                character.StartCooldown(chosen);
 
                 if (character.CurrentStats != null)
                 {
@@ -416,20 +439,6 @@ namespace BattleSystem
                     gameUI.superHeroUI.UpdateManaUI();
                 }
             }
-        }
-
-        private void UpdateAllCooldowns(float deltaTime)
-        {
-            foreach (var character in teamA.Concat(teamB))
-            {
-                character.TickCooldowns(deltaTime);
-            }
-            if (superHero != null)
-            {
-                superHero.TickCooldowns(deltaTime);
-                gameUI.superHeroUI.UpdateCooldowns(superHero);
-            }
-
         }
     }
 }

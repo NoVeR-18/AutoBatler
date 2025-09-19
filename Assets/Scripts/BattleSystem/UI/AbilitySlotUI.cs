@@ -8,7 +8,6 @@ namespace BattleSystem
     public class AbilitySlotUI : MonoBehaviour
     {
         [SerializeField] private Image icon;
-        [SerializeField] private Image cooldownOverlay;
         [SerializeField] private Button button;
         [SerializeField] private TextMeshProUGUI manacostText;
 
@@ -25,8 +24,6 @@ namespace BattleSystem
             if (icon != null)
                 icon.sprite = ability.icon;
 
-            if (cooldownOverlay != null)
-                cooldownOverlay.fillAmount = 0;
 
             if (button != null)
             {
@@ -39,15 +36,6 @@ namespace BattleSystem
             }
         }
 
-        public void UpdateCooldown(float remaining, float max)
-        {
-            if (cooldownOverlay == null) return;
-
-            if (remaining > 0 && max > 0)
-                cooldownOverlay.fillAmount = remaining / max;
-            else
-                cooldownOverlay.fillAmount = 0;
-        }
 
         public AbilityData GetAbility() => ability;
     }

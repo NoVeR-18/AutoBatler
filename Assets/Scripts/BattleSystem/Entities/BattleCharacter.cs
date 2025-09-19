@@ -14,18 +14,30 @@ namespace BattleSystem
         public CharacterStats CurrentStats;
         public DamagePopup damagePopupPrefab;
         public BarUI HPMPBarInstance;
-
         public List<AbilityData> Abilities = new();
-
-        [HideInInspector] public string nameIDInWorld;
 
         private Dictionary<AbilityData, float> cooldowns = new();
         private Dictionary<StatusEffect, float> statusEffects = new();
 
         [SerializeField] private Animator animator;
         [SerializeField] private GameObject healthBarPrefab;
+        [SerializeField] private SpriteRenderer spriteRenderer;
 
         public bool IsAlive => CurrentStats.CurrentHP > 0;
+
+        public Sprite Portrait
+        {
+            get
+            {
+                if (spriteRenderer != null)
+                    return spriteRenderer.sprite;
+                else
+                    return null;
+            }
+        }
+
+
+
 
         private void Awake()
         {
@@ -37,6 +49,8 @@ namespace BattleSystem
                 healthBarPrefab = Resources.Load<GameObject>("UI/HealthBar");
             if (animator == null)
                 animator = GetComponent<Animator>();
+            if (spriteRenderer == null)
+                spriteRenderer = GetComponent<SpriteRenderer>();
         }
 
         private void Start()
@@ -49,19 +63,6 @@ namespace BattleSystem
             HPMPBarInstance = go.GetComponent<BarUI>();
             HPMPBarInstance.SetHealth(CurrentStats.CurrentHP, CurrentStats.MaxHP);
             HPMPBarInstance.SetMana(CurrentStats.CurrentMana, CurrentStats.MaxMana);
-        }
-        public void StartCooldown(AbilityData ability)
-        {
-            if (ability != null)
-                cooldowns[ability] = ability.cooldown;
-        }
-
-        public void TickCooldowns(float deltaTime)
-        {
-            foreach (var key in cooldowns.Keys.ToList())
-            {
-                cooldowns[key] = Mathf.Max(0, cooldowns[key] - deltaTime);
-            }
         }
 
         public AbilityData GetNextReadyAbility(BattleManager manager)
@@ -78,15 +79,11 @@ namespace BattleSystem
             return null;
         }
 
-
-        public float GetRemainingCooldown(AbilityData ability) =>
-            cooldowns.ContainsKey(ability) ? cooldowns[ability] : 0f;
-
         public void TakeDamage(int amount)
         {
             int remainingDamage = amount;
 
-            if (remainingDamage > 0)
+            if (remainingDamage != 0)
             {
                 ShowDamagePopup(remainingDamage);
                 CurrentStats.CurrentHP = Mathf.Max(0, CurrentStats.CurrentHP - remainingDamage);
@@ -104,7 +101,7 @@ namespace BattleSystem
         {
             if (!damagePopupPrefab) return;
 
-            var popup = Instantiate(damagePopupPrefab, transform.position + Vector3.up + (Vector3.right * UnityEngine.Random.Range(-1f, 1f)), Quaternion.identity);
+            var popup = Instantiate(damagePopupPrefab, transform.position + Vector3.up, Quaternion.identity);
             popup.Setup(shieldValue, Color.blue);
         }
 
@@ -248,7 +245,14 @@ namespace BattleSystem
             if (!damagePopupPrefab) return;
 
             var popup = Instantiate(damagePopupPrefab, transform.position + Vector3.up + (Vector3.right * UnityEngine.Random.Range(-1f, 1f)), Quaternion.identity);
-            popup.Setup(damage);
+            if (damage < 0)
+            {
+                damage = -damage;
+                popup.Setup(damage, Color.green);
+            }
+            else
+                popup.Setup(damage);
+
         }
 
         public bool CanAct() => !statusEffects.Keys.Any(e => e.preventAction || e.sleep || e.isFeared);

@@ -14,8 +14,6 @@ namespace BattleSystem
         public List<AbilityData> superSkills;
         public Dictionary<AbilityData, float> skillCooldowns = new();
 
-
-
         [SerializeField] private Animator animator;
 
         public System.Func<BattleTeam, List<BattleCharacter>> GetEnemiesFunc;
@@ -32,18 +30,6 @@ namespace BattleSystem
         public void GainMana(int amount)
         {
             currentMana = Mathf.Min(currentMana + amount, maxMana);
-        }
-
-        public void StartCooldown(AbilityData ability)
-        {
-            if (ability != null)
-                skillCooldowns[ability] = ability.cooldown;
-        }
-
-        public void TickCooldowns(float deltaTime)
-        {
-            foreach (var key in skillCooldowns.Keys.ToList())
-                skillCooldowns[key] = Mathf.Max(0, skillCooldowns[key] - deltaTime);
         }
 
         public void UseSkill(int index)
@@ -70,7 +56,6 @@ namespace BattleSystem
                 }
 
                 currentMana -= skill.ManaCost;
-                StartCooldown(skill);
                 PlayAttackAnimation(skill.animationTrigger);
             }
         }

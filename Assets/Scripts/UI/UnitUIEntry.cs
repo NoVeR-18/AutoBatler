@@ -37,9 +37,12 @@ namespace BattleSystem
             {
                 var go = Instantiate(abilityTogglePrefab, abilitiesContainer);
                 var toggle = go.GetComponent<Toggle>();
-                toggle.GetComponentInChildren<Text>().text = ability.abilityName;
+                toggle.GetComponentInChildren<TextMeshProUGUI>().text = ability.abilityName;
                 abilityToggles.Add(toggle);
             }
+            hpInput.text = "100";
+            manaInput.text = "100";
+            baseDamageInput.text = "5";
 
             removeButton.onClick.RemoveAllListeners();
             removeButton.onClick.AddListener(() =>

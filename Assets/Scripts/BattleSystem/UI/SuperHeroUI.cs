@@ -51,7 +51,6 @@ namespace BattleSystem
 
             superHero.UseSkill(index);
             UpdateManaUI();
-            UpdateCooldowns(superHero);
         }
 
         public void UpdateManaUI()
@@ -68,24 +67,25 @@ namespace BattleSystem
                     btn.interactable = superHero.currentMana >= ability.ManaCost;
             }
         }
-        public void UpdateCooldowns(SuperHero owner)
-        {
 
-            if (superHero == null) return;
-            var cooldowns = owner.GetCooldowns();
+
+        public void ResetUI()
+        {
             foreach (var slot in abilitySlots)
             {
-                var ability = slot.GetAbility();
-
-                if (cooldowns.TryGetValue(ability, out float remaining))
+                if (slot != null)
                 {
-                    slot.UpdateCooldown(remaining, ability.cooldown);
-                }
-                else
-                {
-                    slot.UpdateCooldown(0, ability.cooldown);
+                    slot.OnClicked -= OnSkillClicked;
+                    Destroy(slot.gameObject);
                 }
             }
+
+            abilitySlots.Clear();
+
+            superHero = null;
+
+            manaSlider.fillAmount = 0f;
+            manaText.text = "0/0";
         }
     }
 }
