@@ -47,7 +47,7 @@ namespace BattleSystem
             if (hit != null)
             {
                 var spawnPoint = hit.GetComponent<BattleSpawnPoint>();
-                if (spawnPoint != null && spawnPoint.team == BattleTeam.Team1)
+                if (spawnPoint != null && spawnPoint.team == BattleTeam.Alias)
                 {
                     AssignToSpawnPoint(spawnPoint);
                     return;
@@ -73,16 +73,15 @@ namespace BattleSystem
         }
         private void AssignToSpawnPoint(BattleSpawnPoint point)
         {
-            if (assignedPoint != null)
-            {
-                assignedPoint.ClearAssignedUnit();
-            }
 
             assignedPoint = point;
-            point.AssignUnit(this);
+            var unit = Instantiate(character, point.transform);
+            unit.transform.localPosition = Vector3.zero;
+            point.AssignUnitDirect(unit);
 
             // иконку можно оставить в UI снизу, а можно визуально закрепить над точкой
             transform.position = Camera.main.WorldToScreenPoint(point.transform.position);
+            Destroy(gameObject);
         }
 
         private void ResetToOriginal()

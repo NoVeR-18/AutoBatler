@@ -19,8 +19,8 @@ namespace BattleSystem
         {
             var dict = new Dictionary<BattleTeam, List<BattleSpawnPoint>>
             {
-                { BattleTeam.Team1, teamASpawnPoints.OrderBy(sp => sp.index).ToList() },
-                { BattleTeam.Team2, teamBSpawnPoints.OrderBy(sp => sp.index).ToList() }
+                { BattleTeam.Alias, teamASpawnPoints.OrderBy(sp => sp.index).ToList() },
+                { BattleTeam.Enemies, teamBSpawnPoints.OrderBy(sp => sp.index).ToList() },
             };
 
             return dict;

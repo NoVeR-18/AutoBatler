@@ -18,5 +18,9 @@ namespace BattleSystem
             if (ManaFillImage == null) return;
             ManaFillImage.fillAmount = current / max;
         }
+        public void SetColor(Color color)
+        {
+            HPFillImage.color = color;
+        }
     }
 }

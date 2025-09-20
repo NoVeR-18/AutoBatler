@@ -130,7 +130,7 @@ MonoBehaviour:
     MaxMana: 140
     CurrentMana: 0
     baseDamage: 3
-  damagePopupPrefab: {fileID: 0}
+  damagePopupPrefab: {fileID: 697093004064071725, guid: 9b86633c6e40fa84b82e4a313b82a249, type: 3}
   HPMPBarInstance: {fileID: 0}
   Abilities:
   - {fileID: 11400000, guid: b41d238b138b6ac40aa0713abe642c8c, type: 2}

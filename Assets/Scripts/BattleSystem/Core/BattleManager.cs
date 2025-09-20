@@ -121,35 +121,26 @@ namespace BattleSystem
             occupiedSpawns.Clear();
 
             // team A
-            for (int i = 0; i < teamA.Count && i < _spawnPoints[BattleTeam.Team1].Count; i++)
+            for (int i = 0; i < teamA.Count && i < _spawnPoints[BattleTeam.Alias].Count; i++)
             {
-                var spawn = _spawnPoints[BattleTeam.Team1][i];
-                var character = Instantiate(teamA[i], spawn.transform.position, Quaternion.identity);
-                character.Team = BattleTeam.Team1;
-                character.CurrentStats.CurrentMana = 0; // start with 0 mana
-                occupiedSpawns[spawn] = character;
-                teamA[i] = character;
+                var spawn = _spawnPoints[BattleTeam.Alias][i];
+
+                occupiedSpawns[spawn] = spawn.GetAssignedCharacter();
             }
 
             // team B
-            for (int i = 0; i < teamB.Count && i < _spawnPoints[BattleTeam.Team2].Count; i++)
+            for (int i = 0; i < teamB.Count && i < _spawnPoints[BattleTeam.Enemies].Count; i++)
             {
-                var spawn = _spawnPoints[BattleTeam.Team2][i];
-                var character = Instantiate(teamB[i], spawn.transform.position, Quaternion.identity);
-                character.Team = BattleTeam.Team2;
-                character.CurrentStats.CurrentMana = 0; // start with 0 mana
-                occupiedSpawns[spawn] = character;
-                teamB[i] = character;
+                var spawn = _spawnPoints[BattleTeam.Enemies][i];
+
+                occupiedSpawns[spawn] = spawn.GetAssignedCharacter();
             }
 
             // superhero
             if (superHero != null && spawnPoints.superHeroSpawn != null)
             {
-                var spawn = spawnPoints.superHeroSpawn;
-                var heroInstance = Instantiate(superHero, spawn.transform.position, Quaternion.identity);
-                superHero = heroInstance;
-                superHero.GetEnemiesFunc = team => team == BattleTeam.Team1 ? teamB : teamA;
-                superHero.GetAlliesFunc = team => team == BattleTeam.Team1 ? teamA : teamB;
+                superHero.GetEnemiesFunc = team => team == BattleTeam.Alias ? teamB : teamA;
+                superHero.GetAlliesFunc = team => team == BattleTeam.Alias ? teamA : teamB;
                 superHero.currentMana = 0;
                 superHero.OnDamageDealt += AddHeroDamage;
                 if (gameUI.superHeroUI != null)
@@ -165,8 +156,8 @@ namespace BattleSystem
         {
             turnOrder.Clear();
 
-            List<BattleSpawnPoint> aPoints = _spawnPoints.ContainsKey(BattleTeam.Team1) ? _spawnPoints[BattleTeam.Team1] : new();
-            List<BattleSpawnPoint> bPoints = _spawnPoints.ContainsKey(BattleTeam.Team2) ? _spawnPoints[BattleTeam.Team2] : new();
+            List<BattleSpawnPoint> aPoints = _spawnPoints.ContainsKey(BattleTeam.Alias) ? _spawnPoints[BattleTeam.Alias] : new();
+            List<BattleSpawnPoint> bPoints = _spawnPoints.ContainsKey(BattleTeam.Enemies) ? _spawnPoints[BattleTeam.Enemies] : new();
 
             int max = Mathf.Max(aPoints.Count, bPoints.Count);
 

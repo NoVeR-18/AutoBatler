@@ -36,12 +36,8 @@ namespace BattleSystem
             }
         }
 
-
-
-
         private void Awake()
         {
-
             if (damagePopupPrefab == null)
                 damagePopupPrefab = Resources.Load<DamagePopup>("UI/DamagePopUp");
 
@@ -63,6 +59,10 @@ namespace BattleSystem
             HPMPBarInstance = go.GetComponent<BarUI>();
             HPMPBarInstance.SetHealth(CurrentStats.CurrentHP, CurrentStats.MaxHP);
             HPMPBarInstance.SetMana(CurrentStats.CurrentMana, CurrentStats.MaxMana);
+            if (Team == BattleTeam.Enemies)
+            {
+                HPMPBarInstance.SetColor(Color.red);
+            }
         }
 
         public AbilityData GetNextReadyAbility(BattleManager manager)

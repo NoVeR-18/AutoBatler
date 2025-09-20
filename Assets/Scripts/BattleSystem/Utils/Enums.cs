@@ -11,8 +11,8 @@ namespace BattleSystem
 
     public enum BattleTeam
     {
-        Team1,
-        Team2,
+        Alias,
+        Enemies,
         Team3
     }
     public enum AbilityTargetType
